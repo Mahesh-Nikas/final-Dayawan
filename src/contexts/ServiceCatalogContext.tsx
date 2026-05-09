@@ -103,7 +103,7 @@ export function ServiceCatalogProvider({ children }: { children: ReactNode }) {
   const getServiceById = useCallback((id: string) => services.find((service) => service.id === id), [services]);
 
   const createServiceDraft = useCallback((): ManagedService => ({
-    id: `service-${Date.now()}`,
+    id: `service-${crypto.randomUUID()}`,
     category: "gov",
     title: "",
     description: "",
@@ -176,7 +176,7 @@ function normalizeManagedService(service: ManagedService): ManagedService {
 function normalizeFormField(field: ServiceFormField): ServiceFormField {
   return {
     id: field.id || crypto.randomUUID(),
-    key: field.key.trim() || field.id || `field_${Math.random().toString(36).slice(2, 8)}`,
+    key: field.key.trim() || field.id || `field_${crypto.randomUUID().replace(/-/g, "")}`,
     label: field.label.trim() || "Additional detail",
     type: field.type,
     required: Boolean(field.required),
@@ -185,7 +185,7 @@ function normalizeFormField(field: ServiceFormField): ServiceFormField {
 
 function sanitizeServiceId(id: string): string {
   const normalized = id.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
-  return normalized || `service-${Math.random().toString(36).slice(2, 8)}`;
+  return normalized || `service-${crypto.randomUUID()}`;
 }
 
 function normalizeCategory(category: ServiceCategory): ServiceCategory {
@@ -200,17 +200,21 @@ function upsertById(list: ManagedService[], next: ManagedService): ManagedServic
 }
 
 function normalizeRemoteService(row: Database["public"]["Tables"]["services"]["Row"]): ManagedService {
+  const safeFormSchema = Array.isArray(row.form_schema) ? row.form_schema : [];
+  const safeDocuments = Array.isArray(row.required_documents) ? row.required_documents : [];
   return normalizeManagedService({
     id: row.id,
     category: row.category,
     title: row.title,
     description: row.description,
     details: row.details ?? undefined,
-    required_documents: row.required_documents ?? [],
+    required_documents: safeDocuments,
     fee_amount: Number(row.fee_amount ?? 0),
     fee_note: row.fee_note ?? undefined,
     payment_provider: row.payment_provider,
-    form_schema: (row.form_schema ?? []).map((field) => normalizeFormField(field)),
+    form_schema: safeFormSchema
+      .filter((field): field is ServiceFormField => Boolean(field && typeof field === "object"))
+      .map((field) => normalizeFormField(field)),
     active: row.active,
   });
 }

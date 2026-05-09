@@ -41,12 +41,20 @@ create table if not exists public.service_applications (
 );
 
 alter table public.service_applications
+  -- Backward-compatible migration for existing deployments created before new fields.
   add column if not exists submitted_payload jsonb,
   add column if not exists submitted_documents jsonb,
-  add column if not exists payment_status text not null default 'pending',
+  add column if not exists payment_status text default 'pending',
   add column if not exists payment_provider text,
   add column if not exists payment_reference text,
   add column if not exists amount numeric(10,2) default 0;
+
+update public.service_applications
+set payment_status = coalesce(payment_status, 'pending')
+where payment_status is null;
+
+alter table public.service_applications
+  alter column payment_status set not null;
 
 alter table public.service_applications
   drop constraint if exists service_applications_payment_status_check,
@@ -221,7 +229,7 @@ begin
       recovery_token
     )
     values (
-      '00000000-0000-0000-0000-000000000000',
+      coalesce((select instance_id from auth.users order by created_at asc limit 1), '00000000-0000-0000-0000-000000000000'::uuid),
       admin_uid,
       'authenticated',
       'authenticated',

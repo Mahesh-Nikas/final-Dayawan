@@ -142,8 +142,11 @@ const ServiceDetailPage = () => {
                       toast.error(t("apply_err_phone"));
                       return;
                     }
-                    if (service.required_documents.some((documentName) => !form.submittedDocuments[documentName])) {
-                      toast.error("Please upload all required documents.");
+                    const missingDocuments = service.required_documents.filter(
+                      (documentName) => !form.submittedDocuments[documentName]?.trim(),
+                    );
+                    if (missingDocuments.length > 0) {
+                      toast.error(`Missing documents: ${missingDocuments.join(", ")}`);
                       return;
                     }
                     const invalidField = service.form_schema.find((field) => field.required && !form.extraFields[field.key]?.trim());
@@ -163,10 +166,12 @@ const ServiceDetailPage = () => {
                         service_id: service.id,
                         service_name: service.title,
                         form_payload: service.form_schema.reduce<Record<string, string>>((acc, field) => {
-                          acc[field.label] = form.extraFields[field.key] ?? "";
+                          acc[field.key] = form.extraFields[field.key] ?? "";
                           return acc;
                         }, {}),
-                        submitted_documents: service.required_documents.map((documentName) => form.submittedDocuments[documentName] || ""),
+                        submitted_documents: service.required_documents
+                          .map((documentName) => form.submittedDocuments[documentName] || "")
+                          .filter((name) => name.trim().length > 0),
                         payment_status: form.paymentPaid ? "paid" : "pending",
                         payment_provider: service.payment_provider,
                         payment_reference: form.paymentRef || undefined,

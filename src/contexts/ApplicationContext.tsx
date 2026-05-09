@@ -312,8 +312,14 @@ function normalizeRemoteApplication(row: Database["public"]["Tables"]["service_a
 function normalizeLocalApplication(app: ServiceApplication): ServiceApplication {
   return {
     ...app,
+    submitted_payload:
+      app.submitted_payload && typeof app.submitted_payload === "object" && !Array.isArray(app.submitted_payload)
+        ? app.submitted_payload
+        : undefined,
+    submitted_documents: Array.isArray(app.submitted_documents) ? app.submitted_documents.filter((item) => typeof item === "string") : undefined,
     payment_status: app.payment_status ?? "pending",
     payment_provider: app.payment_provider ?? "none",
+    payment_reference: app.payment_reference || undefined,
     amount: Number.isFinite(app.amount) ? app.amount : 0,
   };
 }

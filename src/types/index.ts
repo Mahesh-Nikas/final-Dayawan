@@ -221,8 +221,6 @@ export interface Database {
           payment_provider?: PaymentProvider;
           form_schema?: ServiceFormField[];
           active?: boolean;
-          created_at?: string;
-          updated_at?: string;
         };
       };
     };

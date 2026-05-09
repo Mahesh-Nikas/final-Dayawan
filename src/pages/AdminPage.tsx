@@ -258,7 +258,7 @@ const AdminPage = () => {
                                 prev
                                   ? {
                                       ...prev,
-                                      form_schema: prev.form_schema.map((item, i) => i === index ? { ...item, label: e.target.value, key: toFieldKey(e.target.value) || item.key } : item),
+                                      form_schema: prev.form_schema.map((item, i) => i === index ? { ...item, label: e.target.value } : item),
                                     }
                                   : prev,
                               )
@@ -403,10 +403,5 @@ const AdminPage = () => {
     </div>
   );
 };
-
-function toFieldKey(label: string): string {
-  const normalized = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
-  return normalized || `field_${Math.random().toString(36).slice(2, 8)}`;
-}
 
 export default AdminPage;

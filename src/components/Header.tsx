@@ -1,6 +1,6 @@
 import { useLang } from "@/i18n/LanguageContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { Menu, X, LogIn, LogOut, UserCircle2 } from "lucide-react";
+import { Sprout, Menu, X, LogIn, LogOut, UserCircle2 } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { BrandLogo } from "@/components/BrandLogo";
 
 export function Header() {
   const { t } = useLang();
@@ -41,16 +40,16 @@ export function Header() {
 
   const isAuthenticated = status === "authenticated" && user;
   const dashboardLinks = isAuthenticated
-    ? isAdmin
-      ? [{ to: "/admin", label: t("nav_admin") }]
-      : [{ to: "/dashboard", label: t("nav_dashboard") }]
+    ? [{ to: "/dashboard", label: t("nav_dashboard") }, ...(isAdmin ? [{ to: "/admin", label: t("nav_admin") }] : [])]
     : [];
 
   return (
     <header className="sticky top-0 z-40 w-full bg-background/85 backdrop-blur-md border-b border-border">
       <div className="container-rural flex items-center justify-between py-3">
         <Link to="/" className="flex items-center gap-2.5 min-h-0">
-          <BrandLogo className="shadow-soft" />
+          <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-soft">
+            <Sprout className="h-5 w-5" />
+          </div>
           <div className="leading-tight">
             <div className="font-extrabold text-base sm:text-lg text-foreground">{t("brand")}</div>
             <div className="text-[11px] text-muted-foreground hidden sm:block">{t("brand_tag")}</div>
